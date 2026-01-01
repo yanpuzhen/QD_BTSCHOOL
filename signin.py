@@ -7,7 +7,7 @@ import hashlib
 import base64
 import urllib.parse
 from playwright.sync_api import sync_playwright
-import google.generativeai as genai
+from google import genai
 import PIL.Image
 
 # Load environment variables
@@ -80,14 +80,16 @@ def run():
                 
                 # Call Gemini API
                 if GEMINI_API_KEY and GEMINI_API_KEY != "your_gemini_api_key":
-                    print("Configuring Gemini API...")
-                    genai.configure(api_key=GEMINI_API_KEY)
-                    model = genai.GenerativeModel(GEMINI_MODEL_NAME)
+                    print("Configuring Gemini API (v2 SDK)...")
+                    client = genai.Client(api_key=GEMINI_API_KEY)
                     
                     try:
                         print(f"Sending image to Gemini model ({GEMINI_MODEL_NAME})...")
                         img = PIL.Image.open(captcha_path)
-                        response = model.generate_content(["Return only the characters visible in the image, no other text.", img])
+                        response = client.models.generate_content(
+                            model=GEMINI_MODEL_NAME,
+                            contents=["Return only the characters visible in the image, no other text.", img]
+                        )
                         captcha_text = response.text.strip()
                         print(f"Gemini Predicted CAPTCHA: '{captcha_text}'")
                         

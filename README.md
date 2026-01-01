@@ -39,8 +39,27 @@ ql repo https://github.com/yanpuzhen/QD_BTSCHOOL.git "signin" "" "requirements" 
 将本分支的 `signin.py` 和 `requirements.txt` 手动复制到青龙脚本库目录。
 
 ### 2. 依赖安装
-- Python3 依赖: `playwright`, `google-generativeai`, `requests`, `pillow`
-- 系统依赖: `playwright install chromium` (需在容器内执行)
+
+#### 必须步骤：修复库缺失报错 (TargetClosedError / libglib missing)
+因为青龙容器通常是精简版 Linux，缺少 Chromium 运行所需的库。**请务必执行以下命令安装依赖：**
+
+方法 1 (推荐，直接在青龙依赖管理 -> Linux 依赖中添加)：
+```text
+chromium
+chromium-chromedriver
+udev
+ttf-freefont
+```
+
+方法 2 (终端手动执行)：
+```bash
+apk add chromium chromium-chromedriver udev ttf-freefont
+```
+*注意：如果报错依然存在，请尝试在终端运行 `playwright install-deps chromium`*
+
+#### Python 依赖
+- Python3 依赖: `playwright`, `google-genai`, `requests`, `pillow`
+- 系统依赖: 确保上面的 Linux 库已安装即正常。
 
 ### 3.环境变量 (Environment Variables)
 

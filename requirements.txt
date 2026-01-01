@@ -1,5 +1,5 @@
 playwright
 python-dotenv
-google-generativeai
+google-genai
 Pillow
 requests
