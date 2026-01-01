@@ -24,8 +24,19 @@
 
 ## 青龙面板使用主要 (Main 分支)
 
-### 1. 拉取脚本
-将本分支的 `signin.py` 和 `requirements.txt` 添加到青龙脚本库。
+### 1. 拉取脚本 (三种方式)
+
+#### 方式 A: 青龙订阅 (推荐)
+在青龙面板的 **“订阅管理”** -> **“新建订阅”** 中输入：
+
+**命令/脚本地址**:
+```bash
+ql repo https://github.com/yanpuzhen/QD_BTSCHOOL.git "signin" "" "requirements" "main"
+```
+**定时规则**: `0 9 * * *` (建议每天运行一次)
+
+#### 方式 B: 手动添加
+将本分支的 `signin.py` 和 `requirements.txt` 手动复制到青龙脚本库目录。
 
 ### 2. 依赖安装
 - Python3 依赖: `playwright`, `google-generativeai`, `requests`, `pillow`
