@@ -49,18 +49,22 @@ apk add chromium chromium-chromedriver udev ttf-freefont
 ```
 
 **情况 B: Debian/Ubuntu (及部分第三方定制青龙)**
-如果您的系统有 `apt` 或 `dpkg`，请运行：
-```bash
-# 1. 修复可能中断的安装
-dpkg --configure -a
+如果您的系统有 `apt` 或 `dpkg`，且无法安装 `chromium-chromedriver`，请尝试：
 
-# 2. 安装依赖
-apt-get update
-# 推荐直接使用 playwright 自带的安装命令:
-playwright install-deps chromium
-# 或者手动安装:
-apt-get install -y libglib2.0-0 libnss3 libnspr4 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 libxfixes3 libxrandr2 libgbm1 libasound2
-```
+1. **(推荐) 使用 Playwright 自动安装依赖**：
+   ```bash
+   # 更新源
+   apt-get update
+   # 自动安装运行所需的库
+   playwright install-deps chromium
+   ```
+
+2. **(手动) 安装常用缺失库**：
+   如果自动安装失败，请手动安装以下核心库：
+   ```bash
+   apt-get update
+   apt-get install -y libglib2.0-0 libnss3 libnspr4 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 libxfixes3 libxrandr2 libgbm1 libasound2 libpango-1.0-0 libpangocairo-1.0-0
+   ```
 
 #### Python 依赖
 - Python3 依赖: `playwright`, `google-genai`, `requests`, `pillow`
