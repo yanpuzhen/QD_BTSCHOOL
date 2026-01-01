@@ -1,0 +1,38 @@
+name: BTSchool Daily Sign-in
+
+on:
+  schedule:
+    # Runs at 09:00 Beijing Time (01:00 UTC) every day
+    - cron: '0 1 * * *'
+  workflow_dispatch:
+
+jobs:
+  signin:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v5
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        playwright install chromium
+        playwright install-deps chromium
+
+    - name: Run Sign-in Script
+      env:
+        BTSCHOOL_USERNAME: ${{ secrets.BTSCHOOL_USERNAME }}
+        BTSCHOOL_PASSWORD: ${{ secrets.BTSCHOOL_PASSWORD }}
+        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        GEMINI_MODEL_NAME: ${{ vars.GEMINI_MODEL_NAME || 'gemini-2.0-flash-exp' }}
+        DINGTALK_WEBHOOK: ${{ secrets.DINGTALK_WEBHOOK }}
+        DINGTALK_SECRET: ${{ secrets.DINGTALK_SECRET }}
+      run: |
+        python signin.py
