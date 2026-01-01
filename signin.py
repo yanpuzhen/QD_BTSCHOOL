@@ -40,7 +40,7 @@ def send_dingtalk_msg(msg_content):
     data = {
         "msgtype": "text",
         "text": {
-            "content": f"BTSchool Sign-in: {msg_content}"
+            "content": f"BTSchool 签到: {msg_content}"
         }
     }
     
@@ -132,8 +132,9 @@ def run():
                             
                             if bonus_element.count() > 0:
                                 bonus_text = bonus_element.first.inner_text()
-                                print(f"Bonus Text Found: {bonus_text}")
-                                send_dingtalk_msg(bonus_text)
+                                bonus_text = bonus_element.first.inner_text()
+                                print(f"找到签到信息: {bonus_text}")
+                                send_dingtalk_msg(f"签到成功，{bonus_text}")
                             else:
                                 # Fallback: look for the green cell or "Already signed in" text?
                                 print("Primary selector failed. Checking for 'already signed in' or other states...")
@@ -141,19 +142,20 @@ def run():
                                 # Check if page text contains "已签到"
                                 body_text = page.inner_text("body")
                                 if "已签到" in body_text or "已经签到" in body_text:
-                                    print("Detected 'Already Signed In' state.")
-                                    send_dingtalk_msg("Success (Already Signed In today)")
+                                if "已签到" in body_text or "已经签到" in body_text:
+                                    print("检测到 '已签到' 状态。")
+                                    send_dingtalk_msg("签到成功 (今日已签)")
                                 else:
-                                    print("Trying alternative green cell selector...")
+                                    print("尝试备用绿色单元格选择器...")
                                     td_locator = page.locator('td[style*="background: green"]')
                                     if td_locator.count() > 0:
                                          bonus_text = td_locator.first.inner_text().strip()
-                                         print(f"Bonus Text Found (fallback): {bonus_text}")
-                                         send_dingtalk_msg(bonus_text)
+                                         print(f"找到魔力值信息 (备用): {bonus_text}")
+                                         send_dingtalk_msg(f"签到成功，获得: {bonus_text}")
                                     else:
-                                        print("Bonus element not found. Taking debug screenshot...")
+                                        print("未找到签到信息，正在截图...")
                                         page.screenshot(path="bonus_debug.png", full_page=True)
-                                        send_dingtalk_msg("Login successful, but could not extract bonus amount. See bonus_debug.png")
+                                        send_dingtalk_msg("登录成功，但未提取到魔力值。请检查日志或截图 (bonus_debug.png)")
                                     
                         except Exception as e:
                             print(f"Error extracting bonus: {e}")
