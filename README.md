@@ -41,21 +41,26 @@ ql repo https://github.com/yanpuzhen/QD_BTSCHOOL.git "signin" "" "requirements" 
 ### 2. 依赖安装
 
 #### 必须步骤：修复库缺失报错 (TargetClosedError / libglib missing)
-因为青龙容器通常是精简版 Linux，缺少 Chromium 运行所需的库。**请务必执行以下命令安装依赖：**
+因为青龙容器可能是 Alpine 或 Debian/Ubuntu 基础镜像，缺少 Chromium 运行所需的库。**请根据您的系统类型安装依赖：**
 
-方法 1 (推荐，直接在青龙依赖管理 -> Linux 依赖中添加)：
-```text
-chromium
-chromium-chromedriver
-udev
-ttf-freefont
-```
-
-方法 2 (终端手动执行)：
+**情况 A: Alpine Linux (标准青龙容器)**
 ```bash
 apk add chromium chromium-chromedriver udev ttf-freefont
 ```
-*注意：如果报错依然存在，请尝试在终端运行 `playwright install-deps chromium`*
+
+**情况 B: Debian/Ubuntu (及部分第三方定制青龙)**
+如果您的系统有 `apt` 或 `dpkg`，请运行：
+```bash
+# 1. 修复可能中断的安装
+dpkg --configure -a
+
+# 2. 安装依赖
+apt-get update
+# 推荐直接使用 playwright 自带的安装命令:
+playwright install-deps chromium
+# 或者手动安装:
+apt-get install -y libglib2.0-0 libnss3 libnspr4 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 libxfixes3 libxrandr2 libgbm1 libasound2
+```
 
 #### Python 依赖
 - Python3 依赖: `playwright`, `google-genai`, `requests`, `pillow`
