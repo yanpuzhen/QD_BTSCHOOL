@@ -1,38 +1,39 @@
-# BTSchool 自动签到脚本 (GitHub Action 版)
+# BTSchool 自动签到脚 (GitHub Action 版)
 
-这是一个用于 BTSchool (学校PT) 自动签到的 Python 脚本。它使用 `playwright` 模拟浏览器登录，并调用 **Google Gemini Vision API** 自动识别图形验证码。
+本分支 (`github-action`) 专为 GitHub Actions 云端自动运行优化。
 
-**本分支 (`github-action`) 专为 GitHub Actions 自动运行优化。**
+如果您需要青龙面板版本，请切换到 [main 分支](https://github.com/yanpuzhen/QD_BTSCHOOL/tree/main)。
 
-## 功能列表
+---
 
-- ✅ **自动定时运行**：每天北京时间 09:00 自动执行。
-- ✅ **智能识别验证码**：使用 Gemini 模型识别验证码。
-- ✅ **随机延时**：脚本内建 0-60 分钟随机等待。
-- ✅ **钉钉推送**：支持钉钉机器人通知。
+## GitHub Action 版本特性
 
-## 部署说明
+- ✅ **自动定时**：每天北京时间 09:00 (UTC 01:00) 自动执行。
+- ✅ **环境集成**：无需自建服务器，利用 GitHub 免费 Runner 运行。
+- ✅ **随机延时**：保留脚本内部的 0-60 分钟随机等待，模拟真人。
 
-### 1. Fork 本仓库
-点击右上角的 **Fork** 按钮，将本仓库复制到你的账号下。
+## 部署步骤
 
-### 2. 配置 Secrets
-进入你的仓库，点击 **Settings** -> **Secrets and variables** -> **Actions** -> **New repository secret**，添加以下变量：
+### 1. Fork 仓库
+点击右上角的 **Fork** 按钮，将本仓库复制到你的 GitHub 账号下。
+
+### 2. 启用 Actions
+进入 Fork 后的仓库，点击顶部的 **Actions** 标签页。
+如果看到 "Workflows aren't being run on this forked repository"，请点击绿色的 **I understand my workflows, go ahead and enable them** 按钮。
+
+### 3. 配置 Secrets (关键)
+进入 **Settings** -> **Secrets and variables** -> **Actions** -> **New repository secret**，添加以下变量：
 
 | Secret Name | 必填 | 说明 |
 | :--- | :--- | :--- |
-| `BTSCHOOL_USERNAME` | ✅ | BTSchool 的登录用户名 |
-| `BTSCHOOL_PASSWORD` | ✅ | BTSchool 的登录密码 |
-| `GEMINI_API_KEY` | ✅ | Google Gemini API Key ([申请地址](https://aistudio.google.com/app/apikey)) |
-| `DINGTALK_WEBHOOK` | ❌ | 钉钉群机器人 Webhook 地址 |
-| `DINGTALK_SECRET` | ❌ | 钉钉群机器人加签密钥 |
+| `BTSCHOOL_USERNAME` | ✅ | BTSchool 用户名 |
+| `BTSCHOOL_PASSWORD` | ✅ | BTSchool 密码 |
+| `GEMINI_API_KEY` | ✅ | Google Gemini API Key |
+| `DINGTALK_WEBHOOK` | ❌ | 钉钉 Webhook |
+| `DINGTALK_SECRET` | ❌ | 钉钉 Secret |
 
-*(可选)* 如果需要更改模型名称（默认 `gemini-2.0-flash-exp`），可以在 **Variables** 标签页添加 `GEMINI_MODEL_NAME`。
-
-### 3. 启用 Workflow
-进入 **Actions** 标签页，点击左侧的 "BTSchool Daily Sign-in"，如果原本被禁用，点击 **Enable workflow**。
-
-你也可以点击 **Run workflow** -> **Run workflow** 手动触发一次测试。
+### 4. 手动测试
+配置完成后，回到 **Actions** 标签页，在左侧选择 "BTSchool Daily Sign-in"，点击右侧的 **Run workflow** 按钮进行测试。
 
 ---
-**注意**：GitHub Action 的 IP 可能会变动，如果 PT 站对 IP 变动敏感，请谨慎使用或通过自建 Runner 解决。
+**注意**：GitHub Action 的出口 IP 不固定。如果站点对异地登录非常敏感，请谨慎使用。
