@@ -23,8 +23,8 @@ def send_dingtalk_msg(msg_content):
     secret = os.getenv("DINGTALK_SECRET")
     
     if not webhook or not secret or webhook == "your_dingtalk_webhook":
-        print("DINGTALK config missing or default. Skipping notification.")
-        print(f"Would have sent: {msg_content}")
+        print("钉钉配置缺失或为默认值。跳过发送通知。")
+        print(f"本应发送内容: {msg_content}")
         return
 
     timestamp = str(round(time.time() * 1000))
@@ -46,85 +46,102 @@ def send_dingtalk_msg(msg_content):
     
     try:
         resp = requests.post(url, json=data, headers=headers)
-        print(f"DingTalk response: {resp.text}")
+        print(f"钉钉接口响应: {resp.text}")
     except Exception as e:
-        print(f"Error sending DingTalk msg: {e}")
+        print(f"发送钉钉消息出错: {e}")
 
 def run():
     with sync_playwright() as p:
-        print("Launching browser...")
+        print("正在启动浏览器...")
         browser = p.chromium.launch(headless=True)
         page = browser.new_page()
         
         try:
-            print(f"Navigating to https://pt.btschool.club/login.php ...")
+            print(f"正在访问 https://pt.btschool.club/login.php ...")
             page.goto("https://pt.btschool.club/login.php")
             
             # Step 1: Fill Username and Password
-            print("Locating username field...")
+            print("正在定位用户名输入框...")
             page.fill('input[name="username"]', USERNAME or "demo_user")
             
-            print("Locating password field...")
+            print("正在定位密码输入框...")
             page.fill('input[name="password"]', PASSWORD or "demo_pass")
             
-            print("Credentials filled.")
+            print("账号密码已填充。")
             
-            # Step 2: Handle CAPTCHA
-            print("Locating CAPTCHA image...")
+            # 第 2 步：处理验证码
+            print("正在定位验证码图片...")
             captcha_img = page.locator('img[src^="image.php"]')
             
             if captcha_img.count() > 0:
-                print("CAPTCHA image found. Capturing...")
+                print("找到验证码。正在截图...")
                 captcha_path = "captcha.png"
                 captcha_img.screenshot(path=captcha_path)
                 
-                # Call Gemini API
+                # 调用 Gemini API
                 if GEMINI_API_KEY and GEMINI_API_KEY != "your_gemini_api_key":
-                    print("Configuring Gemini API (v2 SDK)...")
+                    print("正在配置 Gemini API (v2 SDK)...")
                     client = genai.Client(api_key=GEMINI_API_KEY)
                     
                     try:
-                        print(f"Sending image to Gemini model ({GEMINI_MODEL_NAME})...")
+                        print(f"正在向 Gemini 模型 ({GEMINI_MODEL_NAME}) 发送请求...")
                         img = PIL.Image.open(captcha_path)
                         response = client.models.generate_content(
                             model=GEMINI_MODEL_NAME,
                             contents=["Return only the characters visible in the image, no other text.", img]
                         )
                         captcha_text = response.text.strip()
-                        print(f"Gemini Predicted CAPTCHA: '{captcha_text}'")
+                        print(f"Gemini 识别到的验证码: '{captcha_text}'")
                         
-                        # Fill the CAPTCHA field
-                        print("Filling CAPTCHA field...")
+                        # 填充验证码
+                        print("正在填充验证码...")
                         page.fill('input[name="imagestring"]', captcha_text)
                         
-                        # Step 3: Click Login
-                        print("Clicking 'Login' button...")
+                        # 第 3 步：点击登录
+                        print("正在点击 '登录' 按钮...")
                         page.click('input[type="submit"].btn')
                         
-                        # Wait for login result
-                        print("Waiting 10 seconds for initial load...")
+                        # 等待登录结果
+                        print("正在等待 10 秒以加载...")
                         page.wait_for_timeout(10000)
                         
-                        # Take detailed screenshot of the result
+                        # 截图登录结果
                         result_path = "login_result.png"
-                        print("Taking screenshot (timeout: 120s)...")
+                        print("正在截图（超时时间：120秒）...")
                         try:
                             page.screenshot(path=result_path, full_page=True, timeout=120000)
-                            print(f"Login attempt finished. Screenshot saved to {result_path}")
+                            print(f"登录尝试完成。截图已保存至 {result_path}")
                         except Exception as e:
-                            print(f"Screenshot timed out or failed: {e}")
+                            print(f"截图超时或失败: {e}")
                         
-                        print(f"Current URL: {page.url}")
+                        print(f"当前 URL: {page.url}")
 
-                        # Step 4: Bonus Collection
-                        print("Navigating to Bonus Page...")
+                        # Check if login was successful
+                        if "login.php" in page.url:
+                            print("登录失败：仍停留在登录页面。")
+                            # Look for error message
+                            error_msg = page.locator('.embedded table td.text').first.inner_text() if page.locator('.embedded table td.text').count() > 0 else "未知错误"
+                            print(f"检测到错误: {error_msg}")
+                            send_dingtalk_msg(f"登录失败: {error_msg}")
+                            page.screenshot(path="login_failed.png")
+                            return
+
+                        # Final verification: Check for Logout link
+                        if page.locator('a[href="logout.php"]').count() == 0:
+                            print("登录结果不明确：未找到退出链接。")
+                            # We'll still try to proceed but with a warning
+                        else:
+                            print("登录成功（已找到退出链接）。")
+
+                        # 第 4 步：签到送魔力值
+                        print("正在跳转至签到页面...")
                         page.goto("https://pt.btschool.club/index.php?action=addbonus")
                         
-                        print("Waiting 30 seconds as requested...")
+                        print("按要求等待 30 秒...")
                         time.sleep(30)
                         
-                        # Extract bonus text
-                        print("Extracting bonus info...")
+                        # 提取签到信息
+                        print("正在提取签到信息...")
                         try:
                             # Try precise selector: <font color="white">...今天签到您获得...</font>
                             # Using XPath to be safer with text content
@@ -132,16 +149,14 @@ def run():
                             
                             if bonus_element.count() > 0:
                                 bonus_text = bonus_element.first.inner_text()
-                                bonus_text = bonus_element.first.inner_text()
                                 print(f"找到签到信息: {bonus_text}")
                                 send_dingtalk_msg(f"签到成功，{bonus_text}")
                             else:
-                                # Fallback: look for the green cell or "Already signed in" text?
-                                print("Primary selector failed. Checking for 'already signed in' or other states...")
+                                # 备用方案：检查是否绿色单元格或“已签到”？
+                                print("主要选择器失效。正在检查是否为‘已签到’或其他状态...")
                                 
                                 # Check if page text contains "已签到"
                                 body_text = page.inner_text("body")
-                                if "已签到" in body_text or "已经签到" in body_text:
                                 if "已签到" in body_text or "已经签到" in body_text:
                                     print("检测到 '已签到' 状态。")
                                     send_dingtalk_msg("签到成功 (今日已签)")
@@ -160,19 +175,19 @@ def run():
                         except Exception as e:
                             print(f"Error extracting bonus: {e}")
                             page.screenshot(path="bonus_error.png")
-                            send_dingtalk_msg(f"Login successful, error checking bonus: {e}")
+                            send_dingtalk_msg(f"登录成功，但在检查魔力值时发生错误: {e}")
 
                     except Exception as e:
-                        print(f"ERROR calling Gemini API/Login Flow: {e}")
+                        print(f"调用 Gemini API 或登录流程出错: {e}")
                 else:
-                    print("WARNING: GEMINI_API_KEY not set or is default. Awaiting user configuration.")
+                    print("警告: GEMINI_API_KEY 未设置或为默认值。请配置环境变量。")
             else:
-                print("ERROR: CAPTCHA image not found!")
+                print("错误: 未找到验证码图片！")
                 
         except Exception as e:
-            print(f"Script Error: {e}")
+            print(f"脚本执行错误: {e}")
         finally:
-            print("Script finished.")
+            print("脚本运行结束。")
             browser.close()
 
 if __name__ == "__main__":
