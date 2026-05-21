@@ -32,7 +32,7 @@ jobs:
         BTSCHOOL_PASSWORD: ${{ secrets.BTSCHOOL_PASSWORD }}
         GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         GEMINI_MODEL_NAME: ${{ vars.GEMINI_MODEL_NAME || 'gemini-2.0-flash-exp' }}
-        DINGTALK_WEBHOOK: ${{ secrets.DINGTALK_WEBHOOK }}
-        DINGTALK_SECRET: ${{ secrets.DINGTALK_SECRET }}
+        TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
+        TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
       run: |
         python signin.py
